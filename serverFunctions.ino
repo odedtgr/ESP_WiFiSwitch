@@ -39,6 +39,7 @@ int testWifi(void) {
 void setupAP(void) {
   
   WiFi.mode(WIFI_STA);
+  wifi_station_disconnect();
   WiFi.disconnect();
   delay(100);
   int n = WiFi.scanNetworks();

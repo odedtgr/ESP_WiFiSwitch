@@ -88,11 +88,11 @@ String state; //State of light
 char buf[40]; //For MQTT data recieve
 char* host; //The DNS hostname
 //To be read from Config file
-String esid = "";
-String epass = "";
-String pubTopic;
-String subTopic;
-String mqttServer = "";
+String esid = "Oded's iPhone";
+String epass = "mayahers";
+String pubTopic ="HomeWise/test_light";
+String subTopic ="HomeWise/out/test_light";;
+String mqttServer = "oded.noip.me";
 const char* otaServerIndex = "<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>";
 
 //-------------- void's -------------------------------------------------------------------------------------
@@ -115,7 +115,7 @@ void setup() {
   String hostTemp = hostName;
   hostTemp.replace(":", "-");
   host = (char*) hostTemp.c_str();
-  loadConfig();
+  //loadConfig();
   //loadConfigOld();
   Debugln("DEBUG: loadConfig() passed");
 

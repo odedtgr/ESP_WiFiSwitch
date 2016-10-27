@@ -47,20 +47,19 @@ void mqtt_arrived(char* subTopic, byte* payload, unsigned int length) { // handl
   }
   buf[i] = '\0';
   String msgString = String(buf);
-  Serial.println(" message: " + msgString);
-  if (msgString == "1"){
-      Serial.print("Light is ");
-      Serial.println(digitalRead(OUTPIN));      
-      Serial.print("Switching light to "); 
-      Serial.println("high");
-      digitalWrite(OUTPIN, 1); 
-  } else if (msgString == "0"){
-      Serial.print("Light is ");
-      Serial.println(digitalRead(OUTPIN));    
-      Serial.print("Switching light to "); 
-      Serial.println("low");
-      digitalWrite(OUTPIN, 0); 
-  }    
+//  if (msgString == "1"){
+//      Serial.print("Light is ");
+//      Serial.println(digitalRead(OUTPIN));      
+//      Serial.print("Switching light to "); 
+//      Serial.println("high");
+//      digitalWrite(OUTPIN, 1); 
+//  } else if (msgString == "0"){
+//      Serial.print("Light is ");
+//      Serial.println(digitalRead(OUTPIN));    
+//      Serial.print("Switching light to "); 
+//      Serial.println("low");
+//      digitalWrite(OUTPIN, 0); 
+//  }    
 }
 
 boolean pubState(){ //Publish the current state of the light    

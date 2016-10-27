@@ -1,6 +1,3 @@
-
-
-
 void initWiFi(){
   Serial.println();
   Serial.println();

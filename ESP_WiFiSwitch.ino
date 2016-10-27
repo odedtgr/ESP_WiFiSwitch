@@ -55,6 +55,7 @@ extern "C" {
 
 //***** Settings declare *********************************************************************************************************
 String hostName = "WiFiSwitch"; //The MQTT ID -> MAC adress will be added to make it kind of unique
+const int BUFFER_SIZE = JSON_OBJECT_SIZE(10);
 int iotMode = 1; //IOT mode: 0 = Web control, 1 = MQTT (No const since it can change during runtime)
 //select GPIO's
 #define OUTPIN 13 //output pin

@@ -8,12 +8,11 @@ bool processJson(String message) {
     Serial.println("parseObject() failed");
     return false;
   }
-
-//  if (root.containsKey("state")) {
-//    if (strcmp(root["state"], on_cmd) == 0) {
-//      stateOn = true;
-//    }
-//    else if (strcmp(root["state"], off_cmd) == 0) {
-//      stateOn = false;
-//    }
+  if (strcmp(root["device_on"], "true") == 0){
+    digitalWrite(OUTPIN, 1);
+    Serial.print("Switching light on "); 
+  }else if (strcmp(root["device_on"], "false") == 0){
+    digitalWrite(OUTPIN, 0);
+    Serial.print("Switching light off"); 
+  }
 }

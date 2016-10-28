@@ -63,7 +63,7 @@ int iotMode = 1; //IOT mode: 0 = Web control, 1 = MQTT (No const since it can ch
 
 #define RESTARTDELAY 3 //minimal time in sec for button press to reset
 #define HUMANPRESSDELAY 50 // the delay in ms untill the press should be handled as a normal push by human. Button debounce. !!! Needs to be less than RESTARTDELAY & RESETDELAY!!!
-#define RESETDELAY 10 //Minimal time in sec for button press to reset all settings and boot to config mode
+#define RESETDELAY 20 //Minimal time in sec for button press to reset all settings and boot to config mode
 
 #define MAX_JSON_SIZE 200
 
@@ -91,7 +91,7 @@ String state; //State of light
 char buf[40]; //For MQTT data recieve
 char* host; //The DNS hostname
 //To be read from Config file loadConfig()
-String esid = "Oded's iPhone";
+String esid = "TAGAR";
 String epass = "mayahers";
 String pubTopic ="HomeWise/test_light";
 String subTopic ="HomeWise/out/test_light";;

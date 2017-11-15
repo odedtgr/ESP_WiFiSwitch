@@ -59,7 +59,7 @@ const int BUFFER_SIZE = JSON_OBJECT_SIZE(10);
 int iotMode = 1; //IOT mode: 0 = Web control, 1 = MQTT (No const since it can change during runtime)
 //select GPIO's
 #define OUTPIN 13 //output pin
-#define INPIN 0  // input pin (push button)
+#define INPIN 12  // input pin (push button)
 
 #define RESTARTDELAY 3 //minimal time in sec for button press to reset
 #define HUMANPRESSDELAY 50 // the delay in ms untill the press should be handled as a normal push by human. Button debounce. !!! Needs to be less than RESTARTDELAY & RESETDELAY!!!
@@ -108,7 +108,7 @@ void setup() {
   btn_timer.attach(0.05, btn_handle);
   Debugln("DEBUG: Entering loadConfig()");
   if (!SPIFFS.begin()) {
-    Serial.println("Failed to mount file system");
+    Debugln("Failed to mount file system");
   }
 
   uint8_t mac[6];
@@ -142,15 +142,15 @@ void btn_handle()
     ++count; // one count is 50ms
   } else {
     if (count > 1 && count < HUMANPRESSDELAY / 5) { //push between 50 ms and 1 sec
-      Serial.print("button pressed ");
-      Serial.print(count * 0.05);
-      Serial.println(" Sec.");
+      Debug("button pressed ");
+      Debug(count * 0.05);
+      Debugln(" Sec.");
 
-      Serial.print("Light is ");
-      Serial.println(digitalRead(OUTPIN));
+      Debug("Light is ");
+      Debugln(digitalRead(OUTPIN));
 
-      Serial.print("Switching light to ");
-      Serial.println(!digitalRead(OUTPIN));
+      Debug("Switching light to ");
+      Debugln(!digitalRead(OUTPIN));
       digitalWrite(OUTPIN, !digitalRead(OUTPIN));
       state = digitalRead(OUTPIN);
       if (iotMode == 1 && mqttClient.connected()) {
@@ -158,16 +158,16 @@ void btn_handle()
         Debugln("DEBUG: toPub set to 1");
       }
     } else if (count > (RESTARTDELAY / 0.05) && count <= (RESETDELAY / 0.05)) { //pressed 3 secs (60*0.05s)
-      Serial.print("button pressed ");
-      Serial.print(count * 0.05);
-      Serial.println(" Sec. Restarting!");
+      Debug("button pressed ");
+      Debug(count * 0.05);
+      Debugln(" Sec. Restarting!");
       setOtaFlag(!otaFlag);
       ESP.reset();
     } else if (count > (RESETDELAY / 0.05)) { //pressed 20 secs
-      Serial.print("button pressed ");
-      Serial.print(count * 0.05);
-      Serial.println(" Sec.");
-      Serial.println(" Clear settings and resetting!");
+      Debug("button pressed ");
+      Debug(count * 0.05);
+      Debugln(" Sec.");
+      Debugln(" Clear settings and resetting!");
       configToClear = 1;
     }
     count = 0; //reset since we are at high
@@ -181,14 +181,14 @@ void loop() {
   //Debugln("DEBUG: loop() begin");
   if (configToClear == 1) {
     //Debugln("DEBUG: loop() clear config flag set!");
-    clearConfig() ? Serial.println("Config cleared!") : Serial.println("Config could not be cleared");
+    clearConfig() ? Debugln("Config cleared!") : Debugln("Config could not be cleared");
     delay(1000);
     ESP.reset();
   }
   //Debugln("DEBUG: config reset check passed");
   if (WiFi.status() == WL_CONNECTED && otaFlag) {
     if (otaCount <= 1) {
-      Serial.println("OTA mode time out. Reset!");
+      Debugln("OTA mode time out. Reset!");
       setOtaFlag(0);
       ESP.reset();
       delay(100);

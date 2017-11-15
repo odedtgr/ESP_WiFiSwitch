@@ -57,8 +57,8 @@ boolean pubState(){ //Publish the current state of the light
   if (!connectMQTT()){
       delay(100);
       if (!connectMQTT){                            
-        Serial.println("Could not connect MQTT.");
-        Serial.println("Publish state NOK");
+        //Serial.println("Could not connect MQTT.");
+        //Serial.println("Publish state NOK");
         return false;
       }
     }

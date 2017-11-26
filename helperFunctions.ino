@@ -16,7 +16,8 @@ String macToStr(const uint8_t* mac)
 void otaCountown(){
     if(otaCount>0 && otaFlag==1) {
       otaCount--;
-      Serial.println(otaCount); 
+       Debugln("helperFunctions: otaCount ");
+       Debug(otaCount); 
     }
 }
 #ifdef WEBOTA
@@ -28,15 +29,15 @@ void ota(){
     int port = OTA.parseInt();
     int size   = OTA.parseInt();
 
-    Serial.print("Update Start: ip:");
-    Serial.print(remote);
-    Serial.printf(", port:%d, size:%d\n", port, size);
+    Debugln("helperFunctions: Update Start: ip:");
+    Debug(remote);
+    Debugf(", port:%d, size:%d\n", port, size);
     uint32_t startTime = millis();
 
     WiFiUDP::stopAll();
 
     if(!Update.begin(size)){
-      Serial.println("Update Begin Error");
+      Update Begin Error");
       return;
     }
 
@@ -52,14 +53,14 @@ void ota(){
 
       if(Update.end()){
         clientWiFi.println("OK");
-        Serial.printf("Update Success: %u\nRebooting...\n", millis() - startTime);
+        Debugf("helpreFunctions: Update Success: %u\nRebooting...\n", millis() - startTime);
         ESP.restart();
       } else {
         Update.printError(clientWiFi);
         Update.printError(Serial);
       }
     } else {
-      Serial.printf("Connect Failed: %u\n", millis() - startTime);
+      Debugf("helperFunctions: Connect Failed: %u\n", millis() - startTime);
     }
   }
   //IDE Monitor (connected to Serial)

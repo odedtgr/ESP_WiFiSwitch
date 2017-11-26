@@ -59,7 +59,7 @@ const int BUFFER_SIZE = JSON_OBJECT_SIZE(10);
 int iotMode = 1; //IOT mode: 0 = Web control, 1 = MQTT (No const since it can change during runtime)
 //select GPIO's
 #define OUTPIN 13 //output pin
-#define INPIN 12  // input pin (push button)
+#define INPIN 0  //12 input pin (push button)
 
 #define RESTARTDELAY 3 //minimal time in sec for button press to reset
 #define HUMANPRESSDELAY 50 // the delay in ms untill the press should be handled as a normal push by human. Button debounce. !!! Needs to be less than RESTARTDELAY & RESETDELAY!!!
@@ -91,11 +91,11 @@ String state; //State of light
 char buf[40]; //For MQTT data recieve
 char* host; //The DNS hostname
 //To be read from Config file loadConfig()
-String esid = "TAGAR";
-String epass = "mayahers";
-String pubTopic ="HomeWise/test_light";
-String subTopic ="HomeWise/out/test_light";;
-String mqttServer = "oded.noip.me";
+String esid = ""; 
+String epass = ""; 
+String pubTopic ; //="HomeWise/test_light";
+String subTopic ; //="HomeWise/out/test_light";;
+String mqttServer = ""; //"oded.noip.me";
 const char* otaServerIndex = "<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>";
 
 //-------------- void's -------------------------------------------------------------------------------------
@@ -118,7 +118,7 @@ void setup() {
   String hostTemp = hostName;
   hostTemp.replace(":", "-");
   host = (char*) hostTemp.c_str();
-  //loadConfig();
+  loadConfig();  //this is commented if parameters are static
   //loadConfigOld();
   Debugln("DEBUG: loadConfig() passed");
 
@@ -178,7 +178,7 @@ void btn_handle()
 
 //-------------------------------- Main loop ---------------------------
 void loop() {
-  //Debugln("DEBUG: loop() begin");
+  //Debugln("Main loop() begin");
   if (configToClear == 1) {
     //Debugln("DEBUG: loop() clear config flag set!");
     clearConfig() ? Debugln("Config cleared!") : Debugln("Config could not be cleared");
@@ -218,5 +218,5 @@ void loop() {
     delay(1000);
     initWiFi(); //Try to connect again
   }
-  //Debugln("DEBUG: loop() end");
+  //Debugln("main loop() end");
 }

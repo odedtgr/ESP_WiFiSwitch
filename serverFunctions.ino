@@ -1,21 +1,21 @@
 void initWiFi(){
-  Serial.println();
-  Serial.println();
-  Serial.println("Startup");
+  Debugln();
+  Debugln();
+  Debugln("serverFunctions: Startup");
   
   // test esid 
   WiFi.disconnect();
   delay(100);
   WiFi.mode(WIFI_STA);
-  Serial.print("Connecting to WiFi ");
-  Serial.println(esid);
+  Debug("serverFunctions: Connecting to WiFi ");
+  Debugln(esid);
   Debugln(epass);
   WiFi.begin((char*)esid.c_str(), (char*)epass.c_str());
   if ( testWifi() == 20 ) { 
       launchWeb(0);
       return;
   }
-  Serial.println("Opening AP");
+  Debugln("serverFunctions: Opening AP");
   setupAP();   
 }
 
@@ -25,10 +25,10 @@ int testWifi(void) {
   while ( c < 30 ) {
     if (WiFi.status() == WL_CONNECTED) { return(20); } 
     delay(500);
-    Serial.print(".");    
+    Debug(".");    
     c++;
   }
-  Serial.println("WiFi Connect timed out!");
+  Debugln("serverFunctions: WiFi Connect timed out!");
   return(10);
 } 
 
@@ -40,24 +40,24 @@ void setupAP(void) {
   WiFi.disconnect();
   delay(100);
   int n = WiFi.scanNetworks();
-  Serial.println("scan done");
+  Debugln("serverFunctions: scan done");
   if (n == 0){
-    Serial.println("no networks found");
+    Debugln("serverFunctions: no networks found");
     st ="<b>No networks found:</b>";
   } else {
-    Serial.print(n);
-    Serial.println(" Networks found");
+    Debug(n);
+    Debugln("serverFunctions:  Networks found");
     st = "<ul>";
     for (int i = 0; i < n; ++i)
      {
       // Print SSID and RSSI for each network found
-      Serial.print(i + 1);
-      Serial.print(": ");
-      Serial.print(WiFi.SSID(i));
-      Serial.print(" (");
-      Serial.print(WiFi.RSSI(i));
-      Serial.print(")");
-      Serial.println((WiFi.encryptionType(i) == ENC_TYPE_NONE)?" (OPEN)":"*");
+      Debug(i + 1);
+      Debug(": ");
+      Debug(WiFi.SSID(i));
+      Debug(" (");
+      Debug(WiFi.RSSI(i));
+      Debug(")");
+      Debugln((WiFi.encryptionType(i) == ENC_TYPE_NONE)?" (OPEN)":"*");
       
       // Print to web SSID and RSSI for each network found
       st += "<li>";
@@ -73,7 +73,7 @@ void setupAP(void) {
      }
     st += "</ul>";
   }
-  Serial.println(""); 
+  Debugln(""); 
   WiFi.disconnect();
   delay(100);
   WiFi.mode(WIFI_AP);
@@ -81,20 +81,20 @@ void setupAP(void) {
   
   WiFi.softAP(host);
   WiFi.begin(host); // not sure if need but works
-  Serial.print("Access point started with name ");
-  Serial.println(host);
+  Debug("serverFunctions: Access point started with name ");
+  Debugln(host);
   inApMode=1;
   launchWeb(1);
 }
 
 void launchWeb(int webtype) {
-    Serial.println("");
-    Serial.println("WiFi connected");    
+    Debugln("");
+    Debugln("serverFunctions: WiFi connected");    
     //Start the web server or MQTT
     if(otaFlag==1 && !inApMode){
-      Serial.println("Starting OTA mode.");    
-      Serial.printf("Sketch size: %u\n", ESP.getSketchSize());
-      Serial.printf("Free size: %u\n", ESP.getFreeSketchSpace());
+      Debugln("serverFunctions: Starting OTA mode.");    
+      Debugf("serverFunctions: Sketch size: %u\n", ESP.getSketchSize());
+      Debugf("Free size: %u\n", ESP.getFreeSketchSpace());
       MDNS.begin(host);
       server.on("/", HTTP_GET, [](){
         server.sendHeader("Connection", "close");
@@ -112,7 +112,7 @@ void launchWeb(int webtype) {
         if(upload.status == UPLOAD_FILE_START){
           //Serial.setDebugOutput(true);
           WiFiUDP::stopAll();
-          Serial.printf("Update: %s\n", upload.filename.c_str());
+          Debugf("Update: %s\n", upload.filename.c_str());
           otaCount=300;
           uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
           if(!Update.begin(maxSketchSpace)){//start with max available size
@@ -124,7 +124,7 @@ void launchWeb(int webtype) {
           }
         } else if(upload.status == UPLOAD_FILE_END){
           if(Update.end(true)){ //true to set the size to the current progress
-            Serial.printf("Update Success: %u\nRebooting...\n", upload.totalSize);
+            Debugf("Update Success: %u\nRebooting...\n", upload.totalSize);
           } else {
             Update.printError(Serial);
           }
@@ -133,7 +133,7 @@ void launchWeb(int webtype) {
         yield();
       });
       server.begin();
-      Serial.printf("Ready! Open http://%s.local in your browser\n", host);
+      Debugf("Ready! Open http://%s.local in your browser\n", host);
       MDNS.addService("http", "tcp", 80);
       otaTickLoop.attach(1, otaCountown);
     } else { 
@@ -141,25 +141,25 @@ void launchWeb(int webtype) {
       if (webtype==1 || iotMode==0){ //in config mode or WebControle
           if (webtype==1) {           
             webtypeGlob == 1;
-            Serial.println(WiFi.softAPIP());
+            Debugln(WiFi.softAPIP());
             server.on("/", webHandleConfig);
             server.on("/a", webHandleConfigSave);          
           } else {
             //setup DNS since we are a client in WiFi net
             if (!MDNS.begin(host)) {
-              Serial.println("Error setting up MDNS responder!");
+              Debugln("serverFunctions: Error setting up MDNS responder!");
             } else {
-              Serial.println("mDNS responder started");
+              Debugln("serverFunctions: mDNS responder started");
               MDNS.addService("http", "tcp", 80);
             }          
-            Serial.println(WiFi.localIP());
+            Debugln(WiFi.localIP());
             server.on("/", webHandleRoot);  
             server.on("/cleareeprom", webHandleClearRom);
             server.on("/gpio", webHandleGpio);
           }
           //server.onNotFound(webHandleRoot);
           server.begin();
-          Serial.println("Web server started");   
+          Debugln("serverFunctions: Web server started");   
           webtypeGlob=webtype; //Store global to use in loop()
         } else if(webtype!=1 && iotMode==1){ // in MQTT and not in config mode     
           //mqttClient.setBrokerDomain((char*) mqttServer.c_str());
@@ -171,8 +171,8 @@ void launchWeb(int webtype) {
             if (!connectMQTT()){
                 delay(2000);
                 if (!connectMQTT()){                            
-                  Serial.println("Could not connect MQTT.");
-                  Serial.println("Starting web server instead.");
+                  Debugln("serverFunctions: Could not connect MQTT.");
+                  Debugln("serverFunctions: Starting web server instead.");
                   iotMode=0;
                   launchWeb(0);
                   webtypeGlob=webtype;
@@ -201,7 +201,7 @@ void webHandleConfig(){
   s += "<label>MQTT Subscribe topic: </label><input name='subtop' length=64></br>";
   s += "<input type='submit'></form></p>";
   s += "\r\n\r\n";
-  Serial.println("Sending 200");  
+  Debugln("serverFunctions: Sending 200");  
   server.send(200, "text/html", s); 
 }
 
@@ -210,40 +210,40 @@ void webHandleConfigSave(){
   String s;
   s = "<p>Settings saved to eeprom and reset to boot into new settings</p>\r\n\r\n";
   server.send(200, "text/html", s); 
-  Serial.println("clearing EEPROM.");
+  Debugln("serverFunctions: clearing EEPROM.");
   clearConfig();
   String qsid; 
   qsid = server.arg("ssid");
   qsid.replace("%2F","/");
-  Serial.println("Got SSID: " + qsid);
+  Debugln("serverFunctions: Got SSID: " + qsid);
   esid = (char*) qsid.c_str();
   
   String qpass;
   qpass = server.arg("pass");
   qpass.replace("%2F","/");
-  Serial.println("Got pass: " + qpass);
+  Debugln("serverFunctions: Got pass: " + qpass);
   epass = (char*) qpass.c_str();
 
   String qiot;
   qiot= server.arg("iot");
-  Serial.println("Got iot mode: " + qiot);
+  Debugln("serverFunctions: Got iot mode: " + qiot);
   qiot=="0"? iotMode = 0 : iotMode = 1 ;
   
   String qsubTop;
   qsubTop = server.arg("subtop");
   qsubTop.replace("%2F","/");
-  Serial.println("Got subtop: " + qsubTop);
+  Debugln("serverFunctions: Got subtop: " + qsubTop);
   subTopic = (char*) qsubTop.c_str();
   
   String qpubTop;
   qpubTop = server.arg("pubtop");
   qpubTop.replace("%2F","/");
-  Serial.println("Got pubtop: " + qpubTop);
+  Debugln("serverFunctions: Got pubtop: " + qpubTop);
   pubTopic = (char*) qpubTop.c_str();
   
   mqttServer = (char*) server.arg("host").c_str();
-  Serial.print("Got mqtt Server: ");
-  Serial.println(mqttServer);
+  Debug("serverFunctions: Got mqtt Server: ");
+  Debugln(mqttServer);
 
   Serial.print("Settings written ");
   saveConfig()? Serial.println("sucessfully.") : Serial.println("not succesfully!");;
@@ -259,7 +259,7 @@ void webHandleRoot(){
   s += "<a href=\"/gpio\">Controle GPIO</a><br />";
   s += "<a href=\"/cleareeprom\">Clear settings an boot into Config mode</a><br />";
   s += "\r\n\r\n";
-  Serial.println("Sending 200");  
+  Debugln("serverFunctions: Sending 200");  
   server.send(200, "text/html", s); 
 }
 
@@ -267,12 +267,12 @@ void webHandleClearRom(){
   String s;
   s = "<p>Clearing the config and reset to configure new wifi<p>";
   s += "</html>\r\n\r\n";
-  Serial.println("Sending 200"); 
+  Debugln("serverFunctions: Sending 200"); 
   server.send(200, "text/html", s); 
-  Serial.println("clearing config");
+  Debugln("serverFunctions: clearing config");
   clearConfig();
   delay(10);
-  Serial.println("Done, restarting!");
+  Debugln("serverFunctions: Done, restarting!");
   ESP.reset();
 }
 
@@ -282,8 +282,8 @@ void webHandleGpio(){
     if (server.arg("state")=="1" || server.arg("state")=="0" ) {
       int state = server.arg("state").toInt();
       digitalWrite(OUTPIN, state);
-      Serial.print("Light switched via web request to  ");      
-      Serial.println(state);      
+      Debug("serverFunctions: Light switched via web request to  ");      
+      Debugln(state);      
     }
     s = "Light is now ";
     s += (digitalRead(OUTPIN))?"on":"off";

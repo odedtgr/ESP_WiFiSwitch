@@ -1,13 +1,13 @@
 bool loadConfig() {
   File configFile = SPIFFS.open("/config.json", "r");
   if (!configFile) {
-    Serial.println("Failed to open config file");
+    Debugln("ConfigFunctions: Failed to open config file");
     return false;
   }
 
   size_t size = configFile.size();
   if (size > 1024) {
-    Serial.println("Config file size is too large");
+     Debugln("ConfigFunctions: Config file size is too large");
     return false;
   }
 
@@ -23,7 +23,7 @@ bool loadConfig() {
   JsonObject& json = jsonBuffer.parseObject(buf.get());
 
   if (!json.success()) {
-    Serial.println("Failed to parse config file");
+     Debugln("ConfigFunctions: Failed to parse config file");
     return false;
   }
 
@@ -76,7 +76,7 @@ bool saveConfig() {
 
   File configFile = SPIFFS.open("/config.json", "w");
   if (!configFile) {
-    Serial.println("Failed to open config file for writing");
+     Debugln("ConfigFunctions: Failed to open config file for writing");
     return false;
   }
 
@@ -92,7 +92,7 @@ void setOtaFlag(int intOta){
 }
 
 bool clearConfig(){
-    Debugln("DEBUG: In config clear!");
+     Debugln("ConfigFunctions:  In config clear!");
     return SPIFFS.format();  
 }
 

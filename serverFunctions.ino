@@ -1,7 +1,7 @@
 void initWiFi(){
   Debugln();
   Debugln();
-  Debugln("serverFunctions: Startup");
+  Debugln("serverFunctions: initWifi() called");
   
   // test esid 
   WiFi.disconnect();
@@ -15,8 +15,6 @@ void initWiFi(){
       launchWeb(0);
       return;
   }
-  Debugln("serverFunctions: Opening AP");
-  setupAP();   
 }
 
 int testWifi(void) {
@@ -34,7 +32,7 @@ int testWifi(void) {
 
 
 void setupAP(void) {
-  
+  Debugln("serverFunctions: setupAP()");
   WiFi.mode(WIFI_STA);
   wifi_station_disconnect();
   WiFi.disconnect();

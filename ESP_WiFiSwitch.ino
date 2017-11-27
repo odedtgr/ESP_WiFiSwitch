@@ -123,8 +123,14 @@ void setup() {
   Debugln("DEBUG: loadConfig() passed");
 
   // Connect to WiFi network
-  Debugln("DEBUG: Entering initWiFi()");
-  initWiFi();
+  if (esid==""){
+    Debugln("setup: esid is empty.");
+    setupAP(); 
+    initWiFi();
+  }else{
+    Debugln("DEBUG: Entering initWiFi()");
+    initWiFi();
+  }
   Debugln("DEBUG: initWiFi() passed");
   Debug("iotMode:");
   Debugln(iotMode);
@@ -214,8 +220,8 @@ void loop() {
       }
     }
   } else {
-    Debugln("DEBUG: loop - WiFi not connected");
-    delay(1000);
+    Debugln("Main loop - WiFi not connected");
+    delay(60000);
     initWiFi(); //Try to connect again
   }
   //Debugln("main loop() end");

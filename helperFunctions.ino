@@ -16,8 +16,8 @@ String macToStr(const uint8_t* mac)
 void otaCountown(){
     if(otaCount>0 && otaFlag==1) {
       otaCount--;
-       Debugln("helperFunctions: otaCount ");
-       Debug(otaCount); 
+       Debug("helperFunctions: otaCount ");
+       Debugln(otaCount); 
     }
 }
 #ifdef WEBOTA

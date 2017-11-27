@@ -126,19 +126,8 @@ void setup() {
   if (esid==""){
     Debugln("setup: esid is empty.");
     setupAP(); 
-    initWiFi();
-  }else{
-    Debugln("DEBUG: Entering initWiFi()");
-    initWiFi();
   }
-  Debugln("DEBUG: initWiFi() passed");
-  Debug("iotMode:");
-  Debugln(iotMode);
-  Debug("webtypeGlob:");
-  Debugln(webtypeGlob);
-  Debug("otaFlag:");
-  Debugln(otaFlag);
-  Debugln("DEBUG: Starting the main loop");
+  initWiFi(); // TODO: test if wifi connects after AP stage. is this line needed?
 }
 
 

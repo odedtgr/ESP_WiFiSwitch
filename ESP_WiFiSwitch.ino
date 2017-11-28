@@ -126,8 +126,9 @@ void setup() {
   if (esid==""){
     Debugln("setup: esid is empty.");
     setupAP(); 
-  }
+  }else{
   initWiFi(); // TODO: test if wifi connects after AP stage. is this line needed?
+  }
 }
 
 

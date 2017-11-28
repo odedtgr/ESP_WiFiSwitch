@@ -63,7 +63,7 @@ int iotMode = 1; //IOT mode: 0 = Web control, 1 = MQTT (No const since it can ch
 
 #define RESTARTDELAY 3 //minimal time in sec for button press to reset
 #define HUMANPRESSDELAY 50 // the delay in ms untill the press should be handled as a normal push by human. Button debounce. !!! Needs to be less than RESTARTDELAY & RESETDELAY!!!
-#define RESETDELAY 20 //Minimal time in sec for button press to reset all settings and boot to config mode
+#define RESETDELAY 10 //Minimal time in sec for button press to reset all settings and boot to config mode
 
 #define MAX_JSON_SIZE 200
 
@@ -199,13 +199,11 @@ void loop() {
     } else if (iotMode == 1 && webtypeGlob != 1 && otaFlag != 1) {
       //Debugln("DEBUG: loop() MQTT mode requesthandling ");
       if (!connectMQTT()) {
-        delay(200);
-      }
-      if (mqttClient.connected()) {
-        //Debugln("mqtt handler");
-        mqtt_handler();
-      } else {
         Debugln("mqtt Not connected!");
+        delay(200);
+      }else{
+        //Debugln("mqtt handler");
+        mqtt_handler();  
       }
     }
   } else {

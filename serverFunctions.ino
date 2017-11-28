@@ -166,14 +166,8 @@ void launchWeb(int webtype) {
       mqttClient.setClient(wifiClient);
       if (WiFi.status() == WL_CONNECTED) {
         if (!connectMQTT()) {
+          Debugln("serverFunctions: Could not connect MQTT. Delay 2 sec.");
           delay(2000);
-          if (!connectMQTT()) {
-            Debugln("serverFunctions: Could not connect MQTT.");
-            Debugln("serverFunctions: Starting web server instead.");
-            iotMode = 0;
-            launchWeb(0);
-            webtypeGlob = webtype;
-          }
         }
       }
     }

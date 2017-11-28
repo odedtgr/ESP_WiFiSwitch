@@ -88,8 +88,7 @@ void setupAP(void) {
 }
 
 void launchWeb(int webtype) {
-    Debugln("");
-    Debugln("serverFunctions: WiFi connected");    
+    Debugf("serverFunctions: launchWeb(%d)\n", webtype);
     //Start the web server or MQTT
     if(otaFlag==1 && !inApMode){
       Debugln("serverFunctions: Starting OTA mode.");    

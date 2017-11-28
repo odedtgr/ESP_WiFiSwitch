@@ -22,6 +22,8 @@ int testWifi(void) {
   Debugln("Wifi test...");
   while ( c < 30 ) {
     if (WiFi.status() == WL_CONNECTED) {
+      Debug("serverFunctions: testWifi() connected to WiFi with IP ");
+      Debugln(WiFi.localIP());
       return (20);
     }
     delay(500);
@@ -77,8 +79,6 @@ void setupAP(void) {
   WiFi.disconnect();
   delay(100);
   WiFi.mode(WIFI_AP);
-
-
   WiFi.softAP(host);
   WiFi.begin(host); // not sure if need but works
   Debug("serverFunctions: Access point started with name ");
@@ -88,8 +88,7 @@ void setupAP(void) {
 }
 
 void launchWeb(int webtype) {
-  Debugln("");
-  Debugln("serverFunctions: launchWeb()");
+  Debugf("serverFunctions: launchWeb(%d)\n", webtype);
   //Start the web server or MQTT
   if (otaFlag == 1 && !inApMode) {//ota mode
     Debugln("serverFunctions: Starting OTA mode.");

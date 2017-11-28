@@ -22,7 +22,7 @@
     - And the whole Arduino and ESP8266 comunity
 */
 
-#define DEBUG
+//#define DEBUG
 //#define WEBOTA
 //debug added for information, change this according your needs
 
@@ -32,10 +32,10 @@
 #define Debugf(...) Serial.printf(__VA_ARGS__)
 #define Debugflush  Serial.flush
 #else
-#define Debug(x)    {}
-#define Debugln(x)  {}
-#define Debugf(...) {}
-#define Debugflush  {}
+#define Debug(x)    1
+#define Debugln(x)  1
+#define Debugf(...) 1
+#define Debugflush  1
 #endif
 
 
@@ -201,7 +201,7 @@ void loop() {
       //Debugln("DEBUG: loop() MQTT mode requesthandling ");
       if (!connectMQTT()) {
         Debugln("mqtt Not connected!");
-        delay(200);
+        delay(10000);
       }else{
         //Debugln("mqtt handler");
         mqtt_handler();  
@@ -209,7 +209,7 @@ void loop() {
     }
   } else {
     Debugln("Main loop - WiFi not connected");
-    delay(60000);
+    delay(10000);
     initWiFi(); //Try to connect again
   }
   //Debugln("main loop() end");

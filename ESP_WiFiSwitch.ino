@@ -59,11 +59,13 @@ const int BUFFER_SIZE = JSON_OBJECT_SIZE(10);
 int iotMode = 1; //IOT mode: 0 = Web control, 1 = MQTT (No const since it can change during runtime)
 //select GPIO's
 #define OUTPIN 13 //output pin
-#define INPIN 0  //12 input pin (push button)
+#define INPIN 12  //12 input pin (push button)
 
 #define RESTARTDELAY 3 //minimal time in sec for button press to reset
 #define HUMANPRESSDELAY 50 // the delay in ms untill the press should be handled as a normal push by human. Button debounce. !!! Needs to be less than RESTARTDELAY & RESETDELAY!!!
 #define RESETDELAY 10 //Minimal time in sec for button press to reset all settings and boot to config mode
+#define RECONNECTDELAY 60 //delay between wifi or mqtt reconnection attempts (seconds)
+
 
 #define MAX_JSON_SIZE 200
 
@@ -201,7 +203,7 @@ void loop() {
       //Debugln("DEBUG: loop() MQTT mode requesthandling ");
       if (!connectMQTT()) {
         Debugln("mqtt Not connected!");
-        delay(10000);
+        delay(RECONNECTDELAY*1000);
       }else{
         //Debugln("mqtt handler");
         mqtt_handler();  
@@ -209,7 +211,7 @@ void loop() {
     }
   } else {
     Debugln("Main loop - WiFi not connected");
-    delay(10000);
+    delay(RECONNECTDELAY*1000);
     initWiFi(); //Try to connect again
   }
   //Debugln("main loop() end");

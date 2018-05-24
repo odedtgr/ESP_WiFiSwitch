@@ -22,7 +22,7 @@
     - And the whole Arduino and ESP8266 comunity
 */
 
-//#define DEBUG
+#define DEBUG
 //#define WEBOTA
 //debug added for information, change this according your needs
 
@@ -59,7 +59,7 @@ const int BUFFER_SIZE = JSON_OBJECT_SIZE(10);
 int iotMode = 1; //IOT mode: 0 = Web control, 1 = MQTT (No const since it can change during runtime)
 //select GPIO's
 #define OUTPIN 13 //output pin
-#define INPIN 12  //12 input pin (push button)
+#define INPIN 0  //12 input pin (push button)
 
 #define RESTARTDELAY 3 //minimal time in sec for button press to reset
 #define HUMANPRESSDELAY 50 // the delay in ms untill the press should be handled as a normal push by human. Button debounce. !!! Needs to be less than RESTARTDELAY & RESETDELAY!!!
@@ -139,7 +139,7 @@ void btn_handle()
   if (!digitalRead(INPIN)) {
     ++count; // one count is 50ms
   } else {
-    if (count > 1 && count < HUMANPRESSDELAY / 5) { //push between 50 ms and 1 sec
+    if (count > 1 && count <= RESTARTDELAY / 0.05) { //push between 50 ms and 1 sec
       Debug("button pressed ");
       Debug(count * 0.05);
       Debugln(" Sec.");

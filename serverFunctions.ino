@@ -88,6 +88,7 @@ void setupAP(void) {
 }
 
 void launchWeb(int webtype) {
+
   Debugf("serverFunctions: launchWeb(%d)\n", webtype);
   //Start the web server or MQTT
   if (otaFlag == 1 && !inApMode) {//ota mode
@@ -149,6 +150,48 @@ void launchWeb(int webtype) {
         } else {
           Debugln("serverFunctions: mDNS responder started");
           MDNS.addService("http", "tcp", 80);
+
+    Debugf("serverFunctions: launchWeb(%d)\n", webtype);
+    //Start the web server or MQTT
+    if(otaFlag==1 && !inApMode){
+      Debugln("serverFunctions: Starting OTA mode.");    
+      Debugf("serverFunctions: Sketch size: %u\n", ESP.getSketchSize());
+      Debugf("Free size: %u\n", ESP.getFreeSketchSpace());
+      MDNS.begin(host);
+      server.on("/", HTTP_GET, [](){
+        server.sendHeader("Connection", "close");
+        server.sendHeader("Access-Control-Allow-Origin", "*");
+        server.send(200, "text/html", otaServerIndex);
+      });
+      server.on("/update", HTTP_POST, [](){
+        server.sendHeader("Connection", "close");
+        server.sendHeader("Access-Control-Allow-Origin", "*");
+        server.send(200, "text/plain", (Update.hasError())?"FAIL":"OK");
+        setOtaFlag(0); 
+        ESP.restart();
+      },[](){
+        HTTPUpload& upload = server.upload();
+        if(upload.status == UPLOAD_FILE_START){
+          //Serial.setDebugOutput(true);
+          WiFiUDP::stopAll();
+          Debugf("Update: %s\n", upload.filename.c_str());
+          otaCount=300;
+          uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
+          if(!Update.begin(maxSketchSpace)){//start with max available size
+            Update.printError(Serial);
+          }
+        } else if(upload.status == UPLOAD_FILE_WRITE){
+          if(Update.write(upload.buf, upload.currentSize) != upload.currentSize){
+            Update.printError(Serial);
+          }
+        } else if(upload.status == UPLOAD_FILE_END){
+          if(Update.end(true)){ //true to set the size to the current progress
+            Debugf("Update Success: %u\nRebooting...\n", upload.totalSize);
+          } else {
+            Update.printError(Serial);
+          }
+          Serial.setDebugOutput(false);
+
         }
         Debugln(WiFi.localIP());
         server.on("/", webHandleRoot);

@@ -22,7 +22,7 @@
     - And the whole Arduino and ESP8266 comunity
 */
 
-#define DEBUG
+//#define DEBUG
 //#define WEBOTA
 //debug added for information, change this according your needs
 
@@ -32,10 +32,10 @@
 #define Debugf(...) Serial.printf(__VA_ARGS__)
 #define Debugflush  Serial.flush
 #else
-#define Debug(x)    {}
-#define Debugln(x)  {}
-#define Debugf(...) {}
-#define Debugflush  {}
+#define Debug(x)    1
+#define Debugln(x)  1
+#define Debugf(...) 1
+#define Debugflush  1
 #endif
 
 
@@ -59,11 +59,13 @@ const int BUFFER_SIZE = JSON_OBJECT_SIZE(10);
 int iotMode = 1; //IOT mode: 0 = Web control, 1 = MQTT (No const since it can change during runtime)
 //select GPIO's
 #define OUTPIN 13 //output pin
-#define INPIN 0  //12 input pin (push button)
+#define INPIN 12  //12 input pin (push button)
 
-#define RESTARTDELAY 3 //minimal time in sec for button press to reset
+#define RESTARTDELAY 2 //minimal time in sec for button press to reset
 #define HUMANPRESSDELAY 50 // the delay in ms untill the press should be handled as a normal push by human. Button debounce. !!! Needs to be less than RESTARTDELAY & RESETDELAY!!!
-#define RESETDELAY 20 //Minimal time in sec for button press to reset all settings and boot to config mode
+#define RESETDELAY 10 //Minimal time in sec for button press to reset all settings and boot to config mode
+#define RECONNECTDELAY 60 //delay between wifi or mqtt reconnection attempts (seconds)
+
 
 #define MAX_JSON_SIZE 200
 
@@ -78,6 +80,7 @@ Ticker otaTickLoop;
 //##### Flags ##### They are needed because the loop needs to continue and cant wait for long tasks!
 int rstNeed = 0; // Restart needed to apply new settings
 int toPub = 0; // determine if state should be published.
+int statelessSwitchToPub = 0; // determine if state should be published.
 int configToClear = 0; // determine if config should be cleared.
 int otaFlag = 0;
 boolean inApMode = 0;
@@ -123,16 +126,12 @@ void setup() {
   Debugln("DEBUG: loadConfig() passed");
 
   // Connect to WiFi network
-  Debugln("DEBUG: Entering initWiFi()");
-  initWiFi();
-  Debugln("DEBUG: initWiFi() passed");
-  Debug("iotMode:");
-  Debugln(iotMode);
-  Debug("webtypeGlob:");
-  Debugln(webtypeGlob);
-  Debug("otaFlag:");
-  Debugln(otaFlag);
-  Debugln("DEBUG: Starting the main loop");
+  if (esid==""){
+    Debugln("setup: esid is empty.");
+    setupAP(); 
+  }else{
+  initWiFi(); // TODO: test if wifi connects after AP stage. is this line needed?
+  }
 }
 
 
@@ -141,7 +140,7 @@ void btn_handle()
   if (!digitalRead(INPIN)) {
     ++count; // one count is 50ms
   } else {
-    if (count > 1 && count < HUMANPRESSDELAY / 5) { //push between 50 ms and 1 sec
+    if (count > 1 && count <= 2 / 0.05) { //push between 50 ms and 1 sec
       Debug("button pressed ");
       Debug(count * 0.05);
       Debugln(" Sec.");
@@ -157,13 +156,18 @@ void btn_handle()
         toPub = 1;
         Debugln("DEBUG: toPub set to 1");
       }
-    } else if (count > (RESTARTDELAY / 0.05) && count <= (RESETDELAY / 0.05)) { //pressed 3 secs (60*0.05s)
+    }else if (count > 2 && count <= 10 / 0.05) { //push between 50 ms and 1 sec
+      if (iotMode == 1 && mqttClient.connected()) {
+        statelessSwitchToPub = 1;
+        Debugln("DEBUG: toPub set to 1");
+      }
+    }else if (count > (10 / 0.05) && count <= (20 / 0.05)) { //pressed 3 secs (60*0.05s)
       Debug("button pressed ");
       Debug(count * 0.05);
       Debugln(" Sec. Restarting!");
       setOtaFlag(!otaFlag);
       ESP.reset();
-    } else if (count > (RESETDELAY / 0.05)) { //pressed 20 secs
+    } else if (count > (20 / 0.05)) { //pressed 20 secs
       Debug("button pressed ");
       Debug(count * 0.05);
       Debugln(" Sec.");
@@ -204,18 +208,16 @@ void loop() {
     } else if (iotMode == 1 && webtypeGlob != 1 && otaFlag != 1) {
       //Debugln("DEBUG: loop() MQTT mode requesthandling ");
       if (!connectMQTT()) {
-        delay(200);
-      }
-      if (mqttClient.connected()) {
-        //Debugln("mqtt handler");
-        mqtt_handler();
-      } else {
         Debugln("mqtt Not connected!");
+        delay(RECONNECTDELAY*1000);
+      }else{
+        //Debugln("mqtt handler");
+        mqtt_handler();  
       }
     }
   } else {
-    Debugln("DEBUG: loop - WiFi not connected");
-    delay(1000);
+    Debugln("Main loop - WiFi not connected");
+    delay(RECONNECTDELAY*1000);
     initWiFi(); //Try to connect again
   }
   //Debugln("main loop() end");

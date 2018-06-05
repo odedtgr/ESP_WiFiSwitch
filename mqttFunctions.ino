@@ -34,9 +34,18 @@ void mqtt_handler(){
      toPub=0; 
     }
   }
+
+  if (statelessSwitchToPub==1){
+    Debugln("mqttFunctions: Publishing state via MQTT");
+    if(pubStatelessSwitch()){
+     statelessSwitchToPub=0; 
+    }
+  }
   mqttClient.loop();
   delay(100); //let things happen in background
 }
+
+
 
 void mqtt_arrived(char* subTopic, byte* payload, unsigned int length) { // handle messages arrived 
   int i = 0;
@@ -70,6 +79,38 @@ boolean pubState(){ //Publish the current state of the light
         root.printTo(buffer, sizeof(buffer));
         Debugln("mqttFunctions: To publish state " + (String)buffer );  
       if (mqttClient.publish((char*)pubTopic.c_str(), buffer)) {
+        Debugln("mqttFunctions: Publish state OK");        
+        return true;
+      } else {
+        Debugln("mqttFunctions: Publish state NOK");        
+        return false;
+      }
+     } else {
+         Debugln("mqttFunctions: Publish state NOK");
+         Debugln("mqttFunctions: No MQTT connection.");        
+     }    
+}
+
+boolean pubStatelessSwitch(){ //Publish the current state of the light    
+  StaticJsonBuffer<BUFFER_SIZE> jsonBuffer;
+  String topic = "HomeWise/to/homekit/Stateless switch/statusEvent";
+
+  if (!connectMQTT()){
+      delay(100);
+      if (!connectMQTT){                            
+        Debugln("mqttFunctions: Could not connect MQTT.");
+        //Serial.println("Publish state NOK");
+        return false;
+      }
+    }
+    if (mqttClient.connected()){      
+        String device_state = (String)2;//Long press
+        JsonObject& root = jsonBuffer.createObject();
+        root["val"] = device_state;
+        char buffer[root.measureLength() + 1];
+        root.printTo(buffer, sizeof(buffer));
+        Debugln("mqttFunctions: To publish state " + (String)buffer );  
+      if (mqttClient.publish((char*)topic.c_str(), buffer)) {
         Debugln("mqttFunctions: Publish state OK");        
         return true;
       } else {

@@ -61,7 +61,7 @@ int iotMode = 1; //IOT mode: 0 = Web control, 1 = MQTT (No const since it can ch
 #define OUTPIN 13 //output pin
 #define INPIN 12  //12 input pin (push button)
 
-#define RESTARTDELAY 3 //minimal time in sec for button press to reset
+#define RESTARTDELAY 2 //minimal time in sec for button press to reset
 #define HUMANPRESSDELAY 50 // the delay in ms untill the press should be handled as a normal push by human. Button debounce. !!! Needs to be less than RESTARTDELAY & RESETDELAY!!!
 #define RESETDELAY 10 //Minimal time in sec for button press to reset all settings and boot to config mode
 #define RECONNECTDELAY 60 //delay between wifi or mqtt reconnection attempts (seconds)
@@ -80,6 +80,7 @@ Ticker otaTickLoop;
 //##### Flags ##### They are needed because the loop needs to continue and cant wait for long tasks!
 int rstNeed = 0; // Restart needed to apply new settings
 int toPub = 0; // determine if state should be published.
+int statelessSwitchToPub = 0; // determine if state should be published.
 int configToClear = 0; // determine if config should be cleared.
 int otaFlag = 0;
 boolean inApMode = 0;
@@ -139,7 +140,7 @@ void btn_handle()
   if (!digitalRead(INPIN)) {
     ++count; // one count is 50ms
   } else {
-    if (count > 1 && count <= RESTARTDELAY / 0.05) { //push between 50 ms and 1 sec
+    if (count > 1 && count <= 2 / 0.05) { //push between 50 ms and 1 sec
       Debug("button pressed ");
       Debug(count * 0.05);
       Debugln(" Sec.");
@@ -155,13 +156,18 @@ void btn_handle()
         toPub = 1;
         Debugln("DEBUG: toPub set to 1");
       }
-    } else if (count > (RESTARTDELAY / 0.05) && count <= (RESETDELAY / 0.05)) { //pressed 3 secs (60*0.05s)
+    }else if (count > 2 && count <= 10 / 0.05) { //push between 50 ms and 1 sec
+      if (iotMode == 1 && mqttClient.connected()) {
+        statelessSwitchToPub = 1;
+        Debugln("DEBUG: toPub set to 1");
+      }
+    }else if (count > (10 / 0.05) && count <= (20 / 0.05)) { //pressed 3 secs (60*0.05s)
       Debug("button pressed ");
       Debug(count * 0.05);
       Debugln(" Sec. Restarting!");
       setOtaFlag(!otaFlag);
       ESP.reset();
-    } else if (count > (RESETDELAY / 0.05)) { //pressed 20 secs
+    } else if (count > (20 / 0.05)) { //pressed 20 secs
       Debug("button pressed ");
       Debug(count * 0.05);
       Debugln(" Sec.");
